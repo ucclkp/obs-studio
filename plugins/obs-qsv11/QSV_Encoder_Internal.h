@@ -95,6 +95,7 @@ protected:
 
 private:
 	mfxVersion m_ver;
+	mfxLoader m_loader;
 	mfxSession m_session;
 	void *m_sessionData;
 	mfxFrameAllocator m_mfxAllocator;

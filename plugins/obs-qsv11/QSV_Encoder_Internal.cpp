@@ -83,7 +83,9 @@ QSV_Encoder_Internal::QSV_Encoder_Internal(mfxVersion &version, bool useTexAlloc
 	  m_bUseD3D11(false),
 	  m_bUseTexAlloc(useTexAlloc),
 	  m_sessionData(NULL),
-	  m_ver(version)
+	  m_ver(version),
+	  m_loader(NULL),
+	  m_session(NULL)
 {
 	mfxVariant tempImpl;
 	mfxStatus sts;
@@ -114,13 +116,13 @@ QSV_Encoder_Internal::QSV_Encoder_Internal(mfxVersion &version, bool useTexAlloc
 	if (sts == MFX_ERR_NONE) {
 		MFXQueryVersion(m_session, &version);
 		MFXClose(m_session);
-		MFXUnload(loader);
 
 		blog(LOG_INFO, "\tsurf:           %s", m_bUseTexAlloc ? "Texture" : "SysMem");
 
 		m_ver = version;
-		return;
 	}
+	MFXUnload(loader);
+	m_session = NULL;
 }
 
 QSV_Encoder_Internal::~QSV_Encoder_Internal()
@@ -135,9 +137,10 @@ mfxStatus QSV_Encoder_Internal::Open(qsv_param_t *pParams, enum qsv_codec codec)
 
 	if (m_bUseD3D11 | m_bUseTexAlloc)
 		// Use texture surface
-		sts = Initialize(m_ver, &m_session, &m_mfxAllocator, &g_GFX_Handle, false, codec, &m_sessionData);
+		sts = Initialize(m_ver, &m_loader, &m_session, &m_mfxAllocator, &g_GFX_Handle, false, codec,
+				 &m_sessionData);
 	else
-		sts = Initialize(m_ver, &m_session, NULL, NULL, false, codec, &m_sessionData);
+		sts = Initialize(m_ver, &m_loader, &m_session, NULL, NULL, false, codec, &m_sessionData);
 
 	MSDK_CHECK_RESULT(sts, MFX_ERR_NONE, sts);
 
@@ -903,6 +906,10 @@ mfxStatus QSV_Encoder_Internal::ClearData()
 	MFXVideoENCODE_Close(m_session);
 	ReleaseSessionData(m_sessionData);
 	m_sessionData = NULL;
+	MFXClose(m_session);
+	m_session = NULL;
+	MFXUnload(m_loader);
+	m_loader = NULL;
 	return sts;
 }
 

@@ -15,8 +15,8 @@
  * Windows implementation of OS-specific utility functions
  */
 
-mfxStatus Initialize(mfxVersion ver, mfxSession *pSession, mfxFrameAllocator *pmfxAllocator, mfxHDL *deviceHandle,
-		     bool bCreateSharedHandles, enum qsv_codec codec, void **data)
+mfxStatus Initialize(mfxVersion ver, mfxLoader *pLoader, mfxSession *pSession, mfxFrameAllocator *pmfxAllocator,
+		     mfxHDL *deviceHandle, bool bCreateSharedHandles, enum qsv_codec codec, void **data)
 {
 	UNUSED_PARAMETER(codec);
 	UNUSED_PARAMETER(data);
@@ -57,6 +57,7 @@ mfxStatus Initialize(mfxVersion ver, mfxSession *pSession, mfxFrameAllocator *pm
 		// Initialize Intel VPL Session
 		mfxLoader loader = MFXLoad();
 		mfxConfig cfg = MFXCreateConfig(loader);
+		*pLoader = loader;
 
 		impl.Type = MFX_VARIANT_TYPE_U32;
 		impl.Data.U32 = MFX_IMPL_TYPE_HARDWARE;
@@ -101,6 +102,7 @@ mfxStatus Initialize(mfxVersion ver, mfxSession *pSession, mfxFrameAllocator *pm
 		// Initialize Intel VPL Session
 		mfxLoader loader = MFXLoad();
 		mfxConfig cfg = MFXCreateConfig(loader);
+		*pLoader = loader;
 
 		impl.Type = MFX_VARIANT_TYPE_U32;
 		impl.Data.U32 = MFX_IMPL_TYPE_HARDWARE;

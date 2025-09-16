@@ -174,6 +174,10 @@ mfxStatus _simple_alloc(mfxFrameAllocRequest *request, mfxFrameAllocResponse *re
 	for (int i = 0; i < request->NumFrameSuggested; i++) {
 		mids[i] = (CustomMemId *)calloc(1, sizeof(CustomMemId));
 		if (!mids[i]) {
+			for (int j = 0; j < i; ++j) {
+				free(mids[j]);
+			}
+			free(mids);
 			return MFX_ERR_MEMORY_ALLOC;
 		}
 		mids[i]->rw = request->Type & 0xF000; // Set intended read/write operation
